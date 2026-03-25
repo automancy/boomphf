@@ -46,10 +46,10 @@ where
     }
 
     /// Get the value associated with `key`. You must use a key that was supplied during the creation of the BoomHashMap. Querying for a new key will yield `Some` with a random value, or `None`. Querying with a valid key will always return `Some`.
-    pub fn get<Q: ?Sized>(&self, kmer: &Q) -> Option<&D>
+    pub fn get<Q>(&self, kmer: &Q) -> Option<&D>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -66,10 +66,10 @@ where
     }
 
     /// Mutably get the value associated with `key`. You must use a key that was supplied during the creation of the BoomHashMap. Querying for a new key will yield `Some` with a random value, or `None`. Querying with a valid key will always return `Some`.
-    pub fn get_mut<Q: ?Sized>(&mut self, kmer: &Q) -> Option<&mut D>
+    pub fn get_mut<Q>(&mut self, kmer: &Q) -> Option<&mut D>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -86,10 +86,10 @@ where
     }
 
     /// Get the position in the Mphf of a key, if the key exists.
-    pub fn get_key_id<Q: ?Sized>(&self, kmer: &Q) -> Option<usize>
+    pub fn get_key_id<Q>(&self, kmer: &Q) -> Option<usize>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -123,7 +123,7 @@ where
         }
     }
 
-    pub fn iter(&self) -> BoomIterator<K, D> {
+    pub fn iter(&self) -> BoomIterator<'_, K, D> {
         BoomIterator {
             hash: self,
             index: 0,
@@ -307,10 +307,10 @@ where
         Self::create_map(keys, values, aux_values, mphf)
     }
 
-    pub fn get<Q: ?Sized>(&self, kmer: &Q) -> Option<(&D1, &D2)>
+    pub fn get<Q>(&self, kmer: &Q) -> Option<(&D1, &D2)>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -326,10 +326,10 @@ where
         }
     }
 
-    pub fn get_mut<Q: ?Sized>(&mut self, kmer: &Q) -> Option<(&mut D1, &mut D2)>
+    pub fn get_mut<Q>(&mut self, kmer: &Q) -> Option<(&mut D1, &mut D2)>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -348,10 +348,10 @@ where
         }
     }
 
-    pub fn get_key_id<Q: ?Sized>(&self, kmer: &Q) -> Option<usize>
+    pub fn get_key_id<Q>(&self, kmer: &Q) -> Option<usize>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -376,7 +376,7 @@ where
     }
 
     // Return iterator over key-values pairs
-    pub fn iter(&self) -> Boom2Iterator<K, D1, D2> {
+    pub fn iter(&self) -> Boom2Iterator<'_, K, D1, D2> {
         Boom2Iterator {
             hash: self,
             index: 0,
@@ -497,10 +497,10 @@ where
     }
 
     /// Get the value associated with `key`. You must use a key that was supplied during the creation of the BoomHashMap. Querying for a new key will yield `Some` with a random value, or `None`. Querying with a valid key will always return `Some`.
-    pub fn get<Q: ?Sized>(&self, kmer: &Q) -> Option<&D1>
+    pub fn get<Q>(&self, kmer: &Q) -> Option<&D1>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -510,10 +510,10 @@ where
     }
 
     /// Mutably get the value associated with `key`. You must use a key that was supplied during the creation of the BoomHashMap. Querying for a new key will yield `Some` with a random value, or `None`. Querying with a valid key will always return `Some`.
-    pub fn get_mut<Q: ?Sized>(&mut self, kmer: &Q) -> Option<&mut D1>
+    pub fn get_mut<Q>(&mut self, kmer: &Q) -> Option<&mut D1>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         match maybe_pos {
@@ -616,20 +616,20 @@ where
     }
 
     /// Get the value associated with `key`. You must use a key that was supplied during the creation of the BoomHashMap. Querying for a new key will yield `Some` with a random value, or `None`. Querying with a valid key will always return `Some`.
-    pub fn get<Q: ?Sized>(&self, kmer: &Q) -> Option<(&D1, &D2)>
+    pub fn get<Q>(&self, kmer: &Q) -> Option<(&D1, &D2)>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         maybe_pos.map(|pos| (&self.values[pos as usize], &self.aux_values[pos as usize]))
     }
 
     /// Mutably get the value associated with `key`. You must use a key that was supplied during the creation of the BoomHashMap. Querying for a new key will yield `Some` with a random value, or `None`. Querying with a valid key will always return `Some`.
-    pub fn get_mut<Q: ?Sized>(&mut self, kmer: &Q) -> Option<(&mut D1, &mut D2)>
+    pub fn get_mut<Q>(&mut self, kmer: &Q) -> Option<(&mut D1, &mut D2)>
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: Hash + Eq + ?Sized,
     {
         let maybe_pos = self.mphf.try_hash(kmer);
         maybe_pos.map(|pos| {

@@ -158,10 +158,10 @@ impl BitVector {
         let (word, offset) = word_offset(bits);
         let mut bvec: Vec<Word> = Vec::with_capacity((word + 1) as usize);
         for _ in 0..word {
-            bvec.push(u64::max_value().into());
+            bvec.push(u64::MAX.into());
         }
 
-        let last_val = u64::max_value() >> (64 - offset);
+        let last_val = u64::MAX >> (64 - offset);
         bvec.push(last_val.into());
         BitVector {
             bits,
@@ -363,7 +363,7 @@ impl BitVector {
     #[inline]
     pub fn get_word(&self, word: usize) -> u64 {
         #[cfg(feature = "parallel")]
-        return self.vector[word].load(Ordering::Relaxed) as u64;
+        return self.vector[word].load(Ordering::Relaxed);
 
         #[cfg(not(feature = "parallel"))]
         return self.vector[word] as u64;
@@ -424,7 +424,7 @@ impl<'a> Iterator for BitVectorIter<'a> {
 }
 
 fn u64s(elements: u64) -> u64 {
-    (elements + 63) / 64
+    elements.div_ceil(64)
 }
 
 fn word_offset(index: u64) -> (u64, u64) {

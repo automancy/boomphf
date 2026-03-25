@@ -80,10 +80,10 @@ fn hashmod<T: Hash + ?Sized>(iter: u64, v: &T, n: u64) -> u64 {
     // https://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
     if n < (1 << 32) {
         let h = hash_with_seed32(iter, v);
-        fastmod(h, n as u32) as u64
+        fastmod(h, n as u32)
     } else {
         let h = hash_with_seed(iter, v);
-        h % (n as u64)
+        h % n
     }
 }
 
@@ -311,7 +311,7 @@ impl<T: Hash + Debug> Mphf<T> {
 
         // Add rank of final word up to hash
         let final_word = bv.get_word(idx / 64);
-        if idx % 64 > 0 {
+        if !idx.is_multiple_of(64) {
             rank += (final_word << (64 - (idx % 64))).count_ones() as u64;
         }
         rank
@@ -324,7 +324,7 @@ impl<T: Hash + Debug> Mphf<T> {
     pub fn hash(&self, item: &T) -> u64 {
         for i in 0..self.bitvecs.len() {
             let (bv, _) = &self.bitvecs[i];
-            let hash = hashmod(i as u64, item, bv.capacity() as u64);
+            let hash = hashmod(i as u64, item, bv.capacity());
 
             if bv.contains(hash) {
                 return self.get_rank(hash, i);
@@ -344,7 +344,7 @@ impl<T: Hash + Debug> Mphf<T> {
     {
         for i in 0..self.bitvecs.len() {
             let (bv, _) = &(self.bitvecs)[i];
-            let hash = hashmod(i as u64, item, bv.capacity() as u64);
+            let hash = hashmod(i as u64, item, bv.capacity());
 
             if bv.contains(hash) {
                 return Some(self.get_rank(hash, i));
@@ -418,7 +418,7 @@ struct Context {
 impl Context {
     fn new(size: u64, seed: u64) -> Self {
         Self {
-            size: size as u64,
+            size,
             seed,
             a: BitVector::new(size),
             collide: BitVector::new(size),
@@ -769,7 +769,7 @@ mod tests {
         hashes.sort_unstable();
 
         // Hashes must equal 0 .. n
-        let gt: Vec<u64> = (0..total as u64).collect();
+        let gt: Vec<u64> = (0..total).collect();
         hashes == gt
     }
 
@@ -789,7 +789,7 @@ mod tests {
         hashes.sort_unstable();
 
         // Hashes must equal 0 .. n
-        let gt: Vec<u64> = (0..total as u64).collect();
+        let gt: Vec<u64> = (0..total).collect();
         hashes == gt
     }
 
