@@ -21,8 +21,7 @@ pub struct BoomHashMap<K: Hash, D> {
 
 impl<K, D> BoomHashMap<K, D>
 where
-    K: Hash + Debug + PartialEq,
-    D: Debug,
+    K: Hash + PartialEq,
 {
     fn create_map(mut keys: Vec<K>, mut values: Vec<D>, mphf: Mphf<K>) -> BoomHashMap<K, D> {
         // reorder the keys and values according to the Mphf
@@ -133,8 +132,7 @@ where
 
 impl<K, D> core::iter::FromIterator<(K, D)> for BoomHashMap<K, D>
 where
-    K: Hash + Debug + PartialEq,
-    D: Debug,
+    K: Hash + PartialEq,
 {
     fn from_iter<I: IntoIterator<Item = (K, D)>>(iter: I) -> Self {
         let mut keys = Vec::new();
@@ -149,22 +147,21 @@ where
 }
 
 #[cfg(feature = "parallel")]
-pub trait ConstructibleKey: Hash + Debug + PartialEq + Send + Sync {}
+pub trait ConstructibleKey: Hash + PartialEq + Send + Sync {}
 
 #[cfg(feature = "parallel")]
-impl<T> ConstructibleKey for T where T: Hash + Debug + PartialEq + Send + Sync {}
+impl<T> ConstructibleKey for T where T: Hash + PartialEq + Send + Sync {}
 
 #[cfg(not(feature = "parallel"))]
-pub trait ConstructibleKey: Hash + Debug + PartialEq {}
+pub trait ConstructibleKey: Hash + PartialEq {}
 
 #[cfg(not(feature = "parallel"))]
-impl<T> ConstructibleKey for T where T: Hash + Debug + PartialEq {}
+impl<T> ConstructibleKey for T where T: Hash + PartialEq {}
 
 #[cfg(feature = "parallel")]
 impl<K, D> BoomHashMap<K, D>
 where
-    K: Hash + Debug + PartialEq + Send + Sync,
-    D: Debug,
+    K: Hash + PartialEq + Send + Sync,
 {
     /// Create a new hash map from the parallel array `keys` and `values`, using a parallelized method to construct the Mphf.
     pub fn new_parallel(keys: Vec<K>, data: Vec<D>) -> BoomHashMap<K, D> {
@@ -270,9 +267,7 @@ impl<'a, K: Hash, D1, D2> IntoIterator for &'a BoomHashMap2<K, D1, D2> {
 
 impl<K, D1, D2> BoomHashMap2<K, D1, D2>
 where
-    K: Hash + Debug + PartialEq,
-    D1: Debug,
-    D2: Debug,
+    K: Hash + PartialEq,
 {
     fn create_map(
         mut keys: Vec<K>,
@@ -395,9 +390,8 @@ where
 
 impl<K, D1, D2> core::iter::FromIterator<(K, D1, D2)> for BoomHashMap2<K, D1, D2>
 where
-    K: Hash + Debug + PartialEq,
-    D1: Debug,
-    D2: Debug,
+    K: Hash + PartialEq,
+    
 {
     fn from_iter<I: IntoIterator<Item = (K, D1, D2)>>(iter: I) -> Self {
         let mut keys = Vec::new();
@@ -416,9 +410,8 @@ where
 #[cfg(feature = "parallel")]
 impl<K, D1, D2> BoomHashMap2<K, D1, D2>
 where
-    K: Hash + Debug + PartialEq + Send + Sync,
-    D1: Debug,
-    D2: Debug,
+    K: Hash + PartialEq + Send + Sync,
+
 {
     /// Create a new hash map from the parallel arrays `keys` and `values`, and `aux_values`, using a parallel algorithm to construct the Mphf.
     pub fn new_parallel(keys: Vec<K>, data: Vec<D1>, aux_data: Vec<D2>) -> BoomHashMap2<K, D1, D2> {
@@ -439,7 +432,6 @@ pub struct NoKeyBoomHashMap<K, D1> {
 impl<K, D1> core::iter::FromIterator<(K, D1)> for NoKeyBoomHashMap<K, D1>
 where
     K: ConstructibleKey,
-    D1: Debug,
 {
     fn from_iter<I: IntoIterator<Item = (K, D1)>>(iter: I) -> Self {
         let mut keys = Vec::new();
@@ -461,7 +453,6 @@ where
 impl<K, D1> NoKeyBoomHashMap<K, D1>
 where
     K: ConstructibleKey,
-    D1: Debug,
 {
     fn create_map(mut keys: Vec<K>, mut values: Vec<D1>, mphf: Mphf<K>) -> NoKeyBoomHashMap<K, D1> {
         for i in 0..keys.len() {
@@ -536,8 +527,6 @@ pub struct NoKeyBoomHashMap2<K, D1, D2> {
 impl<K, D1, D2> core::iter::FromIterator<(K, D1, D2)> for NoKeyBoomHashMap2<K, D1, D2>
 where
     K: ConstructibleKey,
-    D1: Debug,
-    D2: Debug,
 {
     fn from_iter<I: IntoIterator<Item = (K, D1, D2)>>(iter: I) -> Self {
         let mut keys = Vec::new();
@@ -561,8 +550,7 @@ where
 impl<K, D1, D2> NoKeyBoomHashMap2<K, D1, D2>
 where
     K: ConstructibleKey,
-    D1: Debug,
-    D2: Debug,
+  
 {
     fn create_map(
         mphf: Mphf<K>,

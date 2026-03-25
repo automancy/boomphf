@@ -97,7 +97,7 @@ pub struct Mphf<T> {
 
 const MAX_ITERS: u64 = 100;
 
-impl<'a, T: 'a + Hash + Debug> Mphf<T> {
+impl<'a, T: 'a + Hash> Mphf<T> {
     /// Constructs an MPHF from a (possibly lazy) iterator over iterators.
     /// This allows construction of very large MPHFs without holding all the keys
     /// in memory simultaneously.
@@ -126,8 +126,10 @@ impl<'a, T: 'a + Hash + Debug> Mphf<T> {
 
         loop {
             if iter > MAX_ITERS {
-                error!("ran out of key space. items: {:?}", done_keys.len());
-                panic!("counldn't find unique hashes");
+                panic!(
+                    "counldn't find unique hashes (ran out of key space. items: {})",
+                    done_keys.len()
+                );
             }
 
             let keys_remaining = if iter == 0 {
@@ -226,7 +228,7 @@ impl<'a, T: 'a + Hash + Debug> Mphf<T> {
     }
 }
 
-impl<T: Hash + Debug> Mphf<T> {
+impl<T: Hash> Mphf<T> {
     /// Generate a minimal perfect hash function for the set of `objects`.
     /// `objects` must not contain any duplicate items.
     /// `gamma` controls the tradeoff between the construction-time and run-time speed,
@@ -263,8 +265,10 @@ impl<T: Hash + Debug> Mphf<T> {
             bitvecs.push(cx.a);
             iter += 1;
             if iter > MAX_ITERS {
-                error!("ran out of key space. items: {:?}", redo_keys);
-                panic!("counldn't find unique hashes");
+                panic!(
+                    "counldn't find unique hashes (ran out of key space. items: {})",
+                    redo_keys.len()
+                );
             }
         }
 
@@ -356,7 +360,7 @@ impl<T: Hash + Debug> Mphf<T> {
 }
 
 #[cfg(feature = "parallel")]
-impl<T: Hash + Debug + Sync + Send> Mphf<T> {
+impl<T: Hash + Sync + Send> Mphf<T> {
     /// Same as `new`, but parallelizes work on the rayon default Rayon threadpool.
     /// Configure the number of threads on that threadpool to control CPU usage.
     #[cfg(feature = "parallel")]
@@ -396,8 +400,10 @@ impl<T: Hash + Debug + Sync + Send> Mphf<T> {
             bitvecs.push(cx.a);
             iter += 1;
             if iter > MAX_ITERS {
-                println!("ran out of key space. items: {:?}", redo_keys);
-                panic!("counldn't find unique hashes");
+                panic!(
+                    "counldn't find unique hashes (ran out of key space. items: {})",
+                    redo_keys.len()
+                );
             }
         }
 
@@ -533,7 +539,7 @@ where
 }
 
 #[cfg(feature = "parallel")]
-impl<'a, T: 'a + Hash + Debug + Send + Sync> Mphf<T> {
+impl<'a, T: 'a + Hash + Send + Sync> Mphf<T> {
     /// Same as to `from_chunked_iterator` but parallelizes work over `num_threads` threads.
     #[cfg(feature = "parallel")]
     pub fn from_chunked_iterator_parallel<I, N>(
@@ -568,8 +574,10 @@ impl<'a, T: 'a + Hash + Debug + Send + Sync> Mphf<T> {
         });
         loop {
             if max_iters.is_some() && iter > max_iters.unwrap() {
-                error!("ran out of key space. items: {:?}", global.done_keys.len());
-                panic!("counldn't find unique hashes");
+                panic!(
+                    "counldn't find unique hashes (ran out of key space. items: {})",
+                    global.done_keys.len()
+                );
             }
 
             let keys_remaining = if iter == 0 {
@@ -701,7 +709,7 @@ mod tests {
     /// Check that a Minimal perfect hash function (MPHF) is generated for the set xs
     fn check_mphf<T>(xs: HashSet<T>) -> bool
     where
-        T: Sync + Hash + PartialEq + Eq + Debug + Send,
+        T: Sync + Hash + PartialEq + Eq + Send,
     {
         let xsv: Vec<T> = xs.into_iter().collect();
 
@@ -712,7 +720,7 @@ mod tests {
     /// Check that a Minimal perfect hash function (MPHF) is generated for the set xs
     fn check_mphf_serial<T>(xsv: &[T]) -> bool
     where
-        T: Hash + PartialEq + Eq + Debug,
+        T: Hash + PartialEq + Eq,
     {
         // Generate the MPHF
         let phf = Mphf::new(1.7, xsv);
@@ -731,7 +739,7 @@ mod tests {
     #[cfg(feature = "parallel")]
     fn check_mphf_parallel<T>(xsv: &[T]) -> bool
     where
-        T: Sync + Hash + PartialEq + Eq + Debug + Send,
+        T: Sync + Hash + PartialEq + Eq + Send,
     {
         // Generate the MPHF
         let phf = Mphf::new_parallel(1.7, xsv, None);
@@ -749,14 +757,14 @@ mod tests {
     #[cfg(not(feature = "parallel"))]
     fn check_mphf_parallel<T>(_xsv: &[T]) -> bool
     where
-        T: Hash + PartialEq + Eq + Debug,
+        T: Hash + PartialEq + Eq,
     {
         true
     }
 
     fn check_chunked_mphf<T>(values: Vec<Vec<T>>, total: u64) -> bool
     where
-        T: Sync + Hash + PartialEq + Eq + Debug + Send,
+        T: Sync + Hash + PartialEq + Eq + Send,
     {
         let phf = Mphf::from_chunked_iterator(1.7, &values, total);
 
@@ -776,7 +784,7 @@ mod tests {
     #[cfg(feature = "parallel")]
     fn check_chunked_mphf_parallel<T>(values: Vec<Vec<T>>, total: u64) -> bool
     where
-        T: Sync + Hash + PartialEq + Eq + Debug + Send,
+        T: Sync + Hash + PartialEq + Eq + Send,
     {
         let phf = Mphf::from_chunked_iterator_parallel(1.7, &values, None, total, 2);
 
@@ -796,7 +804,7 @@ mod tests {
     #[cfg(not(feature = "parallel"))]
     fn check_chunked_mphf_parallel<T>(_values: Vec<Vec<T>>, _total: u64) -> bool
     where
-        T: Sync + Hash + PartialEq + Eq + Debug + Send,
+        T: Sync + Hash + PartialEq + Eq + Send,
     {
         true
     }
